@@ -1,0 +1,56 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+def detect_anomaly(data_array, k=2):
+    datapoint = []
+    anomaly = []
+    anomaly_indices = []  # Store indices of anomalies
+    for i in range(len(data_array)):
+        mean = 0
+        distances = []
+        for j in range(len(data_array)):
+            if i == j: continue
+            dist = data_array[j] - data_array[i]
+            distances.append(abs(dist))
+
+        distances.sort()
+        kmin = distances[0:k]
+
+        for j in range(len(kmin)):
+            mean += kmin[j]
+        mean = mean / len(kmin)
+        
+        if mean > 0:
+            anomaly.append(data_array[i])
+            anomaly_indices.append(i)  # Store index of anomaly
+        else:
+            datapoint.append(data_array[i])
+
+    return datapoint, anomaly, anomaly_indices
+
+# Load data from Excel file
+data = pd.read_csv("/Users/khyatigarude/Desktop/COLLEGE/SEM 8/ADS/ADS Practical/outliers.csv")
+
+d = list(data["Sleep duration"])
+datapoint, anomaly, outlier_indices = detect_anomaly(d)
+
+val = 0
+
+plt.figure(1)
+plt.subplot(211)
+plt.plot(d, np.zeros_like(d) + val, 'o')  # plotting the original data
+plt.subplot(212)
+plt.plot(datapoint, np.zeros_like(datapoint) + val, 'o') # plotting the original data
+plt.plot(anomaly, np.zeros_like(anomaly) + val, 'x')  # plotting anomalies
+plt.show()
+
+# Plot the data
+plt.figure(figsize=(10, 6))
+plt.scatter(range(len(d)), d, c='b', label='Inliers')
+plt.scatter(outlier_indices, [d[i] for i in outlier_indices], c='r', label='Outliers')
+plt.xlabel('Index')
+plt.ylabel('Sleep duration')
+plt.title('Outlier Detection using Unsupervised k-Nearest Neighbors')
+plt.legend()
+plt.show()
